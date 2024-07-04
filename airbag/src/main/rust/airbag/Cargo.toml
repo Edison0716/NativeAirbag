@@ -1,0 +1,17 @@
+[package]
+name = "airbag"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+log = "0.4.14"
+libc = "0.2.105"
+jni = "0.21.1"
+ndk = {version = "0.9.0"}
+android_logger = "0.14.1"
+lazy_static = "1.4.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+[lib]
+crate_type = ["staticlib", "dylib"]
