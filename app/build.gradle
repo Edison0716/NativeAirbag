@@ -9,6 +9,9 @@ cargo {
     module = "../airbag/src/main/rust/airbag"
     libname = "airbag"
     targets = ["x86_64", "arm64"]
+    //   profile = 'release'
+    profile = 'debug'
+    verbose = true
 }
 
 android {

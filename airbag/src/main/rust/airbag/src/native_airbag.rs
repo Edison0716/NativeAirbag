@@ -30,42 +30,35 @@ extern "C" fn sig_handler(sig: i32, _info: *mut libc::siginfo_t, _ptr: *mut libc
         if let Some(signal_config) = config.signal_configs.get(&sig) {
             let crash_trace = get_stack_trace_when_crash();
             info!("dump native stack...");
-            info!("{}", crash_trace);
             // Here you would add logic to check the backtrace for keywords
             for elf_name in signal_config.keys() {
-                // filter 1. elf_name
-                if !elf_name.is_empty() {
-                    if crash_trace.contains(elf_name) {
-                        match signal_config.get(elf_name) {
-                            Some(value) => {
-                                // filter 2. keywords.
-                                if value.is_empty() {
-                                    // if keyword is empty, catch signal directly.
-                                    warn!("Caught signal {} from ELF {} with no keyword...", sig, elf_name);
-                                    return;
-                                }
-                                for keyword in value {
-                                    if crash_trace.contains(keyword) {
-                                        // hit keyword, catch...
-                                        warn!("Caught signal {} from ELF {} with keyword {}...", sig, elf_name, keyword);
-                                        return;
-                                    }
-                                }
-                            }
-                            None => {
-                                // ignore
-                            }
+                if elf_name.is_empty() || !crash_trace.contains(elf_name) {
+                    continue;
+                }
+
+                if let Some(keywords) = signal_config.get(elf_name) {
+                    if keywords.is_empty() {
+                        // if keyword is empty, catch signal directly.
+                        warn!("Caught signal {} from ELF {} with no keyword...", sig, elf_name);
+                        return;
+                    }
+
+                    for keyword in keywords {
+                        if crash_trace.contains(keyword) {
+                            // hit keyword, catch...
+                            warn!("Caught signal {} from ELF {} with keyword {}...", sig, elf_name, keyword);
+                            return;
                         }
                     }
                 }
             }
-        }
 
-        error!("Signal {} not caught, delegating to original handler...", sig);
-        for (orig_sig, orig_action) in original_actions {
-            if orig_sig == sig {
-                unsafe { sigaction(sig, &orig_action, null_mut()); }
-                unsafe { raise(sig); }
+            error!("Signal {} not caught, delegating to original handler...", sig);
+            for (orig_sig, orig_action) in original_actions {
+                if orig_sig == sig {
+                    unsafe { sigaction(sig, &orig_action, null_mut()); }
+                    unsafe { raise(sig); }
+                }
             }
         }
     }

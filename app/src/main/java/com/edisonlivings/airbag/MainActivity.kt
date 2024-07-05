@@ -21,7 +21,9 @@ class MainActivity : ComponentActivity() {
 
         Airbag().registerAirbag(
             AirbagConfig.Builder()
-                .addSignalConfig(11, "airbag.so", "")
+//                .addSignalConfig(11, "airbag.so", "faefafafafe")
+//                .addSignalConfig(11, "airbag.so",  "A")
+                .addSignalConfig(11, "airbag.so")
                 .build()
         )
 
